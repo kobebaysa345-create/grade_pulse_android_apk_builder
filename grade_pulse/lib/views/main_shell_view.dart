@@ -2888,7 +2888,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                             title: Text(task.title, style: TextStyle(decoration: task.isCompleted ? TextDecoration.lineThrough : null)),
                             subtitle: Text('${task.category} • ${_formatDateTime(task.dateTime)}\n${task.priority} priority', maxLines: 2, overflow: TextOverflow.ellipsis),
                             isThreeLine: true,
-                            trailing: Wrap(mainAxisSize: MainAxisSize.min, children: [
+                            trailing: Wrap(children: [
                               IconButton(tooltip: 'Edit', icon: const Icon(Icons.edit_outlined), onPressed: () async {
                                 await _showReminderDialog(reminder: task, group: group);
                                 if (ctx.mounted) setLocal(() {});
