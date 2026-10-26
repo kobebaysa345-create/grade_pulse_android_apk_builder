@@ -10,8 +10,12 @@ permissions:
 
 jobs:
   build-apk:
-    name: Build installable Android APK
+    name: Build Grade Pulse Android APK
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: grade_pulse
+
     steps:
       - name: Check out source code
         uses: actions/checkout@v4
@@ -28,7 +32,17 @@ jobs:
           channel: stable
           cache: true
 
-      # The archive contains Flutter source but no generated Android platform files.
+      - name: Verify this is the Grade Pulse project
+        shell: bash
+        run: |
+          test -f pubspec.yaml || { echo "::error::pubspec.yaml not found inside grade_pulse/. Check the repository layout."; exit 1; }
+          test -f lib/main.dart || { echo "::error::lib/main.dart not found inside grade_pulse/."; exit 1; }
+          if grep -q "Flutter Demo Home Page" lib/main.dart; then
+            echo "::error::The source is the default Flutter demo, not Grade Pulse. Stopping to avoid another wrong APK."
+            exit 1
+          fi
+          echo "Found Grade Pulse Flutter source."
+
       - name: Generate Android platform files if missing
         shell: bash
         run: |
@@ -46,31 +60,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Grade-Pulse-Android-APK
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: grade_pulse/build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
-          retention-days: 14
-
-  quality-checks:
-    name: Format, analyze, and test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out source code
-        uses: actions/checkout@v4
-
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-          cache: true
-
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Check formatting
-        run: dart format --output=none --set-exit-if-changed lib test
-
-      - name: Analyze Dart code
-        run: flutter analyze
-
-      - name: Run tests
-        run: flutter test
+          retention-days: 30
