@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "terms": [
+    {
+      "name": "1st Year - 1st Term",
+      "isDemo": false,
+      "courses": [
+        {
+          "code": "BTVTED-ICT 101",
+          "title": "Hardware Servicing",
+          "units": 3,
+          "assessments": [
+            { "title": "Hardware Diagnostics Quiz", "scoreAchieved": 95.0, "maxScore": 100.0 },
+            { "title": "Assembly Midterm Lab", "scoreAchieved": 92.0, "maxScore": 100.0 }
+          ]
+        },
+        {
+          "code": "HIST 101",
+          "title": "Philippine History",
+          "units": 3,
+          "assessments": [
+            { "title": "Research Essay", "scoreAchieved": 88.0, "maxScore": 100.0 }
+          ]
+        }
+      ]
+    }
+  ],
+  "reminders": [
+    {
+      "id": "1760774400000000",
+      "title": "Philippine History Essay Submission",
+      "courseCode": "HIST 101",
+      "category": "Assignment",
+      "dateTime": "2026-10-19T00:00:00.000",
+      "isCompleted": false,
+      "isDemo": false
+    },
+    {
+      "id": "1760774400000001",
+      "title": "Hardware Servicing Midterm Exam",
+      "courseCode": "BTVTED-ICT 101",
+      "category": "Exam",
+      "dateTime": "2026-10-21T00:00:00.000",
+      "isCompleted": false,
+      "isDemo": false
+    }
+  ],
+  "groups": [
+    {
+      "id": "1760774400000002",
+      "name": "BTVTED-ICT Hardware Team",
+      "members": ["Devon", "Maria", "You"],
+      "notes": "",
+      "isDemo": false
+    }
+  ],
+  "settings": {
+    "themeMode": "dark",
+    "gpaScale": "Standard 4.0 GPA",
+    "calcCurrent": "90",
+    "calcWeight": "60",
+    "calcTarget": "92"
+  }
+}

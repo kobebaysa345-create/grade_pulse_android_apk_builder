@@ -1,0 +1,28 @@
+# Dart / Flutter
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Generated plugin registrants
+**/GeneratedPluginRegistrant.java
+**/generated_plugin_registrant.cc
+**/generated_plugin_registrant.h
+**/generated_plugins.cmake
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+
+# Platform-specific generated files
+/android/local.properties
+/ios/Flutter/.last_build_id
+/macos/Flutter/GeneratedPluginRegistrant.swift
+
+# OS files
+.DS_Store
+Thumbs.db
