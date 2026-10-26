@@ -1,3 +1,4 @@
+
 name: Build Grade Pulse Android APK
 
 on:
@@ -29,28 +30,57 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Check Flutter project location
-        run: test -f grade_pulse_riverpod_refactor/pubspec.yaml
+      - name: Find Flutter app
+        id: locate
+        shell: bash
+        run: |
+          APP_ROOT=""
+          while IFS= read -r file; do
+            dir="${file%/pubspec.yaml}"
+            if [ -f "$dir/lib/main.dart" ]; then
+              APP_ROOT="$dir"
+              break
+            fi
+          done < <(find . -type f -name pubspec.yaml \
+            -not -path '*/.dart_tool/*' \
+            -not -path '*/build/*' -print)
+
+          if [ -z "$APP_ROOT" ]; then
+            echo "::error::Flutter app not found. Checking project files:"
+            find . -maxdepth 6 -type f \
+              \( -name pubspec.yaml -o -path '*/lib/main.dart' \) -print
+            exit 1
+          fi
+
+          APP_ROOT="${APP_ROOT#./}"
+          echo "app_root=$APP_ROOT" >> "$GITHUB_OUTPUT"
+          echo "APP_ROOT=$APP_ROOT" >> "$GITHUB_ENV"
+          echo "Flutter app found at: $APP_ROOT"
 
       - name: Generate Android files if missing
-        working-directory: grade_pulse_riverpod_refactor
+        shell: bash
         run: |
+          cd "$APP_ROOT"
           if [ ! -d android ]; then
             flutter create --platforms=android .
           fi
 
-      - name: Download project dependencies
-        working-directory: grade_pulse_riverpod_refactor
-        run: flutter pub get
+      - name: Download dependencies
+        shell: bash
+        run: |
+          cd "$APP_ROOT"
+          flutter pub get
 
       - name: Build release APK
-        working-directory: grade_pulse_riverpod_refactor
-        run: flutter build apk --release
+        shell: bash
+        run: |
+          cd "$APP_ROOT"
+          flutter build apk --release
 
       - name: Upload APK
         uses: actions/upload-artifact@v7
         with:
           name: grade-pulse-android-apk
-          path: grade_pulse_riverpod_refactor/build/app/outputs/flutter-apk/app-release.apk
+          path: ${{ steps.locate.outputs.app_root }}/build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
           retention-days: 90
