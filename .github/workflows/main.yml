@@ -3,6 +3,9 @@ name: Build Grade Pulse Android APK
 on:
   push:
     branches: [main, master]
+    paths:
+      - 'grade_pulse/**'
+      - '.github/workflows/main.yml'
   workflow_dispatch:
 
 permissions:
@@ -10,11 +13,14 @@ permissions:
 
 jobs:
   build-apk:
-    name: Build Android APK
+    name: Build the actual Grade Pulse app
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: grade_pulse
 
     steps:
-      - name: Checkout source code
+      - name: Check out repository
         uses: actions/checkout@v4
 
       - name: Set up Java
@@ -27,24 +33,86 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          cache: true
 
-      - name: Generate Android files if missing
+      - name: Verify Grade Pulse source (fail rather than build a demo)
         shell: bash
         run: |
+          set -euo pipefail
+          test -f pubspec.yaml || { echo "::error::grade_pulse/pubspec.yaml is missing."; exit 1; }
+          test -f lib/main.dart || { echo "::error::grade_pulse/lib/main.dart is missing."; exit 1; }
+          test -f lib/app.dart || { echo "::error::grade_pulse/lib/app.dart is missing."; exit 1; }
+          grep -q "GradePulseApp" lib/main.dart || { echo "::error::This is not the expected Grade Pulse entry point."; exit 1; }
+          grep -q "WelcomeScreen" lib/app.dart || { echo "::error::Grade Pulse app root was not found."; exit 1; }
+          if grep -q "Flutter Demo Home Page" lib/main.dart; then
+            echo "::error::Default Flutter counter demo detected. Refusing to build it."; exit 1
+          fi
+          echo "Verified actual Grade Pulse source under grade_pulse/."
+
+      - name: Generate Android platform files if missing
+        shell: bash
+        run: |
+          set -euo pipefail
           if [ ! -d android ]; then
             flutter create --platforms=android --org com.gradepulse --project-name grade_pulse .
           fi
+          # Guard against accidentally overwriting the actual app entry point.
+          grep -q "GradePulseApp" lib/main.dart || { echo "::error::Grade Pulse entry point changed during platform generation; refusing to build."; exit 1; }
 
-      - name: Install dependencies
+      - name: Install Flutter dependencies
         run: flutter pub get
 
       - name: Build release APK
         run: flutter build apk --release
 
-      - name: Upload APK
+      - name: Verify built APK exists
+        shell: bash
+        run: test -s build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Upload Grade Pulse APK
         uses: actions/upload-artifact@v4
         with:
           name: Grade-Pulse-Android-APK
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: grade_pulse/build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
           retention-days: 14
+
+  quality-checks:
+    name: Analyze and test Grade Pulse source
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: grade_pulse
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Verify Grade Pulse source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f pubspec.yaml
+          test -f lib/main.dart
+          grep -q "GradePulseApp" lib/main.dart
+          if grep -q "Flutter Demo Home Page" lib/main.dart; then
+            echo "::error::Default Flutter counter demo detected."; exit 1
+          fi
+
+      - name: Install Flutter dependencies
+        run: flutter pub get
+
+      - name: Check formatting
+        run: dart format --output=none --set-exit-if-changed lib test
+
+      - name: Analyze Dart code
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test
