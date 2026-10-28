@@ -422,9 +422,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
             _currentIndex = 4;
           });
           break;
-        case 'antigravity':
-          setState(() => _showAntigravityTab = true);
-          break;
         case 'calculator':
           _openGradeCalculator();
           break;
@@ -456,7 +453,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         'calendar' => _currentIndex == 2 && !_remindersOnly,
         'reminders' => _currentIndex == 2 && _remindersOnly,
         'me' => _currentIndex == 4 && !_showAntigravityTab,
-        'antigravity' => _showAntigravityTab,
         _ => false,
       };
       return ListTile(
@@ -512,7 +508,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                   destination(id: 'me', label: 'Me / Profile', icon: Icons.person_outline_rounded, key: 'drawer-me'),
                   const Divider(height: 24),
                   destination(id: 'settings', label: 'Settings and Theme', icon: Icons.settings_outlined, key: 'drawer-settings'),
-                  destination(id: 'antigravity', label: 'Antigravity', icon: Icons.code_rounded, key: 'drawer-antigravity'),
                   const Divider(height: 24),
                   ListTile(
                     key: const ValueKey('drawer-logout'),
@@ -620,7 +615,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           child: Column(children: [
             ListTile(leading: const Icon(Icons.calculate_outlined), title: const Text('Grade Calculator'), subtitle: const Text('Calculate your overall weighted grade from seven scores'), onTap: _openGradeCalculator),
             ListTile(leading: const Icon(Icons.palette_outlined), title: const Text('Appearance'), subtitle: Text(_themeLabel(widget.controller.themeMode)), onTap: _showSettingsSheet),
-            ListTile(leading: const Icon(Icons.code_rounded), title: const Text('Antigravity'), subtitle: const Text('View and edit account data structure'), onTap: () => setState(() => _showAntigravityTab = true)),
             ListTile(leading: Icon(Icons.logout, color: cs.error), title: Text('Log Out', style: TextStyle(color: cs.error)), onTap: _logout),
           ]),
         ),
